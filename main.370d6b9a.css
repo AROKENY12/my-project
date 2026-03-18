@@ -1,0 +1,32 @@
+{
+  "short_name": "TaskManager",
+  "name": "Academic Task Manager",
+  "description": "Intelligent academic task management powered by Agentic AI",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#4f46e5",
+  "background_color": "#1e1b4b",
+  "orientation": "portrait-primary",
+  "categories": ["education", "productivity"],
+  "scope": "/",
+  "prefer_related_applications": false
+}
