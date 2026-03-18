@@ -1,51 +1,41 @@
-"""
-Database migration: add scheduling tables for agentic AI scheduling.
-"""
-
 from db_ops import get_connection
 
 
-def add_schedule_tables():
+def init_db():
     conn = get_connection()
     cur = conn.cursor()
     try:
         cur.execute(
             """
-            CREATE TABLE IF NOT EXISTS student_availability (
+            CREATE TABLE IF NOT EXISTS user_profiles (
                 id SERIAL PRIMARY KEY,
-                user_id INTEGER REFERENCES user_profiles(id) ON DELETE CASCADE,
-                day_of_week INTEGER NOT NULL CHECK (day_of_week >= 0 AND day_of_week <= 6),
-                start_time TIME NOT NULL,
-                end_time TIME NOT NULL,
-                location VARCHAR(100),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                CONSTRAINT valid_time_range CHECK (end_time > start_time),
-                CONSTRAINT unique_availability UNIQUE (user_id, day_of_week, start_time)
+                name VARCHAR(100) NOT NULL,
+                email VARCHAR(100) UNIQUE,
+                academic_program VARCHAR(100),
+                password_hash TEXT,
+                preferences JSONB,
+                history JSONB
             );
             """
         )
 
         cur.execute(
             """
-            CREATE TABLE IF NOT EXISTS scheduled_slots (
+            CREATE TABLE IF NOT EXISTS tasks (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES user_profiles(id) ON DELETE CASCADE,
-                task_id INTEGER REFERENCES tasks(id) ON DELETE CASCADE,
-                scheduled_date DATE NOT NULL,
-                start_time TIME NOT NULL,
-                end_time TIME NOT NULL,
-                status VARCHAR(50) DEFAULT 'scheduled',
-                ai_reasoning TEXT,
-                confidence_score FLOAT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                CONSTRAINT valid_slot_time CHECK (end_time > start_time)
+                title VARCHAR(200) NOT NULL,
+                description TEXT,
+                deadline TIMESTAMP,
+                priority INTEGER,
+                status VARCHAR(50),
+                deleted BOOLEAN DEFAULT FALSE,
+                dependencies INTEGER[],
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             """
         )
 
-        cur.execute("ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS password_hash TEXT;")
-        cur.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS deleted BOOLEAN DEFAULT FALSE;")
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS user_sessions (
@@ -60,18 +50,24 @@ def add_schedule_tables():
             """
         )
 
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_availability_user ON student_availability(user_id);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_scheduled_user_date ON scheduled_slots(user_id, scheduled_date);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_scheduled_task ON scheduled_slots(task_id);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at);")
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS resources (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES user_profiles(id) ON DELETE CASCADE,
+                title VARCHAR(200),
+                link TEXT,
+                description TEXT
+            );
+            """
+        )
 
         conn.commit()
-        print("Scheduling tables created successfully!")
+        print("Database tables created successfully!")
     finally:
         cur.close()
         conn.close()
 
 
 if __name__ == "__main__":
-    add_schedule_tables()
+    init_db()
